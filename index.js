@@ -2,26 +2,19 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
+const mysql = require('mysql');
 const app = express();
 app.use(bodyParser.json());
 
 const POSTMAN_API_KEY = '50e7086602084b2cb1c5692822fa110c';
 axios.defaults.headers.common['X-Api-Key'] = POSTMAN_API_KEY;
-const MLAB_URI = 'mongodb://senger:ws18012001@ds113122.mlab.com:13122/postman-integration';
-mongoose.connect(MLAB_URI);
-Schema = mongoose.Schema;
 
-const monitorStatsSchema = new Schema({
-    id: { type: String },
-    name: { type: String },
-    status: { type: String },
-    startedAt: { type: Date },
-    finishedAt: { type: Date },
-    asserts: [],
-
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'password',
+    database: 'local_db'
 });
-
-const monitorStatsModel = mongoose.model('MonitorStats', monitorStatsSchema);
 
 let monitorsUids = [];
 let monitorStats;
@@ -37,26 +30,21 @@ app.post('/monitors/run', (req, res) => {
         axios.post(`https://api.getpostman.com/monitors/${monitorUid}/run`)
         .then(response => {
             console.log(response.data.run.stats.requests);
-            let assertsResults = [];
-            assertsResults.push(response.data.run.stats.requests);
-            console.log(assertsResults);
-            monitorStats = new monitorStatsModel(
-                {
-                    id: response.data.run.info.collectionUid,
-                    name: response.data.run.info.name,
-                    status: response.data.run.info.status,
-                    startedAt: response.data.run.info.startedAt,
-                    finishedAt: response.data.run.info.finishedAt,
-                    asserts: assertsResults,
-                }
-            );
-            monitorStats.save((err, monitorStats) => {
-                if(err) {
-                    res.status(500).send();
-                    return console.error(err);
-                }
-                res.status(201).send();
+            connection.connect()
+            const postman_result = {
+                collection_id: response.data.run.info.collectionUid,
+                collection_name: response.data.run.info.name,
+                status: response.data.run.info.status,
+                started: response.data.run.info.startedAt,
+                finished: response.data.run.info.finishedAt,
+                requests: response.data.run.stats.requests.total,
+                fails: response.data.run.stats.requests.failed
+            };
+            const query = connection.query('INSERT INTO postman_result SET ?', postman_result, (error, results, fields) => {
+                if (error) throw error;
             });
+            connection.end();
+            res.status(201).send();
         })
         .catch(error => {
             console.log(error);
@@ -77,16 +65,14 @@ app.post('/monitors', (req, res) => {
         monitorsUids.forEach(monitorUid => {
             axios.get(`https://api.getpostman.com/monitors/${monitorUid}`)
                 .then(response => {
-                    monitorStats = new monitorStatsModel(
-                        {
-                            id: response.data.monitor.id,
-                            name: response.data.monitor.name,
-                            status: response.data.monitor.lastRun.status,
-                            startedAt: response.data.monitor.lastRun.startedAt,
-                            finishedAt: response.data.monitor.lastRun.finishedAt,
-                            asserts: response.data.monitor.lastRun.stats,
-                        }
-                    );
+                    monitorStats = {
+                        id: response.data.monitor.id,
+                        name: response.data.monitor.name,
+                        status: response.data.monitor.lastRun.status,
+                        startedAt: response.data.monitor.lastRun.startedAt,
+                        finishedAt: response.data.monitor.lastRun.finishedAt,
+                        asserts: response.data.monitor.lastRun.stats,
+                    }
                     monitorStats.save((err, monitorStats) => {
                         if(err) {
                             res.status(500).send();
