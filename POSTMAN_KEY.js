@@ -1,1 +1,1 @@
-module.exports = '50e7086602084b2cb1c5692822fa110c';
+module.exports = '<INSERT A VALID API KEY>';
