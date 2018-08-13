@@ -1,10 +1,10 @@
 const mysql = require('mysql');
 
 module.exports = mysql.createConnection({
-    host: '10.13.10.7',
-    user: 'bitnami',
-    password: 'd5f3356b38',
-    database: 'bitnami_redmine_nova'
+    host: 'localhost',
+    user: 'root',
+    password: 'password',
+    database: 'local_db'
 });
 
 // create table postman_result (
