@@ -1,6 +1,7 @@
 const axios = require('axios');
 const connection = require('../../db.js');
 const POSTMAN_API_KEY = require('../../POSTMAN_KEY');
+const moment = require('moment');
 axios.defaults.headers.common['X-Api-Key'] = POSTMAN_API_KEY;
 
 const monitorUidByName = (monitorName) => {
@@ -18,13 +19,14 @@ const runById = (monitorUid) => {
 const run = (req, res) => {
     monitorUidByName(req.body.name).then(monitorUid => {
         runById(monitorUid).then(monitorResult => {
-            connection.connect()
+            connection.connect();
+
             const postman_result = {
                 collection_id: monitorResult.run.info.collectionUid,
                 collection_name: monitorResult.run.info.name,
                 status: monitorResult.run.info.status,
-                started: monitorResult.run.info.startedAt,
-                finished: monitorResult.run.info.finishedAt,
+                started: moment(monitorResult.run.info.startedAt).format('YYYY-MM-DD hh:mm:ss'),
+                finished: moment(monitorResult.run.info.finishedAt).format('YYYY-MM-DD hh:mm:ss'),
                 requests: monitorResult.run.stats.requests.total,
                 fails: monitorResult.run.stats.requests.failed
             };

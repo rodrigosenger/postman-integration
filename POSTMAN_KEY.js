@@ -1,1 +1,1 @@
-module.exports = '<INSERT A VALID KEY>';
+module.exports = '50e7086602084b2cb1c5692822fa110c';
