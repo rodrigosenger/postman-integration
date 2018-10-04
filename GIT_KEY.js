@@ -1,0 +1,1 @@
+module.exports = '<INSERT YOUR GITLAB KEY HERE>';

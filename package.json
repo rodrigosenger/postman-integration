@@ -1,13 +1,13 @@
 {
   "name": "postman-integration",
   "version": "1.0.0",
-  "description": "",
+  "description": "This service is responsible for running and storage the results of integration test.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Rodrigo Senger",
   "license": "ISC",
   "devDependencies": {
     "axios": "^0.18.0",
@@ -15,6 +15,7 @@
     "express": "^4.16.3",
     "moment": "^2.22.2",
     "mongoose": "^5.2.6",
-    "mysql": "^2.16.0"
+    "mysql": "^2.16.0",
+    "newman": "^4.1.0"
   }
 }

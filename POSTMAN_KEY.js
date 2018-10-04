@@ -1,1 +1,1 @@
-module.exports = '<INSERT A VALID API KEY>';
+module.exports = '<INSERT_YOUR_POSTMAN_KEY_HERE>';

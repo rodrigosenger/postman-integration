@@ -1,10 +1,10 @@
 const mysql = require('mysql');
 
-module.exports = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'local_db'
+module.exports = mysql.createPool({
+    host: '<HOST_URI>',
+    user: '<DB_USER>',
+    password: '<DB_PASSWORD>',
+    database: '<DB_NAME>'
 });
 
 // create table postman_result (
@@ -14,6 +14,6 @@ module.exports = mysql.createConnection({
 // 	status varchar(80),
 // 	started timestamp,
 // 	finished timestamp NULL DEFAULT NULL,
-// 	requests integer,
-// 	fails integer
+// 	total_asserts integer,
+// 	total_fails integer
 // );
