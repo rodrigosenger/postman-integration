@@ -5,6 +5,7 @@ const moment = require('moment');
 const newman = require('newman');
 axios.defaults.headers.common['Private-Token'] = GIT_KEY;
 const {getGitFile} = require('./../git/gitService');
+const isUrl = require('is-url');
 
 const testFails = summary => {
     const fails = summary.run.stats.assertions.failed;
@@ -76,7 +77,12 @@ const treatError = (summary, projectId) => {
 
 const runNewman = (req, res) => {
     const projectName = req.body.projectName ? req.body.projectName : 'lasanha';
-    Promise.all([getGitFile(req.body.gitCollectionPath), getGitFile(req.body.gitEnvironmentPath), mysqlPersistence.getProjectIdByName(projectName)])
+    if (!req.body.gitCollectionPath || !req.body.gitEnvironmentPath) {
+        res.status(422).send({error: 'gitCollectionPath and gitEnvironmentPath are required.'})
+    } else if (!isUrl(req.body.gitCollectionPath) || !isUrl(req.body.gitEnvironmentPath)) {
+        res.status(422).send({error: 'Insert a valid uri on gitCollectionPath and gitEnvironmentPath.'})
+    } else {
+        Promise.all([getGitFile(req.body.gitCollectionPath), getGitFile(req.body.gitEnvironmentPath), mysqlPersistence.getProjectIdByName(projectName)])
         .then(response => {
             const collection = response[0].data;
             const environment = response[1].data;
@@ -95,7 +101,11 @@ const runNewman = (req, res) => {
                     res.status(200).send(treatSuccess(summary, projectId));
                 }
             });
+        })
+        .catch(err => {
+            res.status(422).send({error: 'Insert an existent file on gitCollectionPath and gitEnvironmentPath.'});
         });
+    }
 }
 
 module.exports = {runNewman};
