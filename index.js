@@ -9,4 +9,7 @@ app.post('/monitors/run', monitor.run);
 
 app.post('/newman/run', newmanService.runNewman);
 
-app.listen(3000);
+app.listen(3000, function() {
+    console.log('Server is running on port 3000');
+    newmanService.runScheduleNewman();
+});

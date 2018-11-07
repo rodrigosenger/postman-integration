@@ -5,7 +5,9 @@ const moment = require('moment');
 const newman = require('newman');
 axios.defaults.headers.common['Private-Token'] = GIT_KEY;
 const {getGitFile} = require('./../git/gitService');
+const {teams} = require('./../webhook/webhookService');
 const isUrl = require('is-url');
+const schedule = require('node-schedule');
 
 const testFails = summary => {
     const fails = summary.run.stats.assertions.failed;
@@ -75,6 +77,24 @@ const treatError = (summary, projectId) => {
     return response;
 }
 
+const runScheduleNewman = function() {
+    return schedule.scheduleJob('* * * * *', () => {
+        console.log('Monitor is started!')
+        newman.run({
+            collection: require('./criticalPath/Critical_path_monitor.postman_collection.json')
+        }, (err, summary) => {
+            const assertions = getCollectionAsserts(summary);
+            const webhookUrl = summary.globals.values.find(global => global.key === 'webhookUrl').value;
+            teams(webhookUrl, assertions.total, assertions.failed);
+            if (err) {
+               console.error(err);
+            } else {
+                console.log('Monitor ran successfully!');
+            };
+        })
+    });
+}
+
 const runNewman = (req, res) => {
     const projectName = req.body.projectName ? req.body.projectName : 'lasanha';
     if (!req.body.gitCollectionPath || !req.body.gitEnvironmentPath) {
@@ -87,12 +107,10 @@ const runNewman = (req, res) => {
             const collection = response[0].data;
             const environment = response[1].data;
             const projectId = response[2];
-
             newman.run({
                 collection: collection,
                 environment: environment
             }, (err, summary) => {
-
                 if (err) {
                     res.status(500);
                 } else if (testFails(summary)) {
@@ -108,4 +126,4 @@ const runNewman = (req, res) => {
     }
 }
 
-module.exports = {runNewman};
+module.exports = {runNewman, runScheduleNewman};

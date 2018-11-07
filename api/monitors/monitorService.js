@@ -2,7 +2,6 @@ const axios = require('axios');
 const connection = require('../../db.js');
 const POSTMAN_API_KEY = require('../../POSTMAN_KEY');
 const moment = require('moment');
-const newman = require('newman');
 const {getProjectIdByName} = require('./../persistence/mysql');
 axios.defaults.headers.common['X-Api-Key'] = POSTMAN_API_KEY;
 
